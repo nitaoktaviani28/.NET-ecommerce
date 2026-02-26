@@ -25,9 +25,6 @@
     <!-- Prometheus -->
     <PackageReference Include="prometheus-net" Version="8.2.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.0" />
-
-    <!-- Pyroscope -->
-    <PackageReference Include="Pyroscope" Version="0.8.5" />
   </ItemGroup>
 
 </Project>
