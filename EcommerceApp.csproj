@@ -11,11 +11,11 @@
     <!-- ASP.NET Core -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
 
-    <!-- PostgreSQL -->
+    <!-- PostgreSQL + OpenTelemetry (STABLE) -->
     <PackageReference Include="Npgsql" Version="8.0.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Npgsql" Version="1.8.1" />
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
 
-    <!-- OpenTelemetry (UPGRADED - FIX NU1902) -->
+    <!-- OpenTelemetry -->
     <PackageReference Include="OpenTelemetry" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
