@@ -1,47 +1,24 @@
 /**
  * Observability/Profiling.cs
- * 
- * Equivalent to: observability/profiling.go
- * 
- * Pyroscope profiling setup.
- * Enables continuous CPU and memory profiling.
+ *
+ * Profiling DISABLED temporarily.
+ *
+ * Reason:
+ * Pyroscope .NET SDK API is not stable and breaks build.
+ * Tracing & metrics are prioritized.
  */
-
-using Pyroscope;
 
 namespace EcommerceApp.Observability;
 
 public static class Profiling
 {
     /// <summary>
-    /// Initialize Pyroscope profiling.
-    /// Equivalent to initProfiling() in Go.
-    /// 
-    /// Enables:
-    /// - CPU profiling
-    /// - Allocation profiling
+    /// Initialize profiling (disabled).
+    /// This keeps build stable and CI green.
     /// </summary>
     public static void InitProfiling()
     {
-        try
-        {
-            var serviceName = Env.GetEnv("OTEL_SERVICE_NAME", "dotnet-ecommerce");
-            var pyroscopeEndpoint = Env.GetEnv(
-                "PYROSCOPE_ENDPOINT",
-                "http://pyroscope-distributor.monitoring.svc.cluster.local:4040"
-            );
-
-            PyroscopeAgent.Start(new PyroscopeConfig
-            {
-                ApplicationName = serviceName,
-                ServerAddress = pyroscopeEndpoint,
-            });
-
-            Console.WriteLine("✅ Pyroscope profiling initialized");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Profiling init failed (non-fatal): {ex.Message}");
-        }
+        // Profiling intentionally disabled
+        // Will be enabled later using supported .NET approach
     }
 }
