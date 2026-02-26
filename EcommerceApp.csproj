@@ -10,10 +10,10 @@
   <ItemGroup>
     <!-- ASP.NET Core -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-    
+
     <!-- PostgreSQL -->
     <PackageReference Include="Npgsql" Version="8.0.1" />
-    
+
     <!-- OpenTelemetry -->
     <PackageReference Include="OpenTelemetry" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
@@ -21,13 +21,13 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
-    
+
     <!-- Prometheus -->
     <PackageReference Include="prometheus-net" Version="8.2.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.0" />
-    
-    <!-- Pyroscope -->
-    <PackageReference Include="Pyroscope" Version="0.1.0" />
+
+    <!-- Pyroscope (FIXED) -->
+    <PackageReference Include="Pyroscope" Version="0.8.5" />
   </ItemGroup>
 
 </Project>
