@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // =========================
 // INISIALISASI OBSERVABILITY (SINGLE ENTRY POINT)
 // =========================
-// Equivalent to observability.Init() in Go main.go
+// OpenTelemetry + Tracing di-register DI SINI
 ObservabilityInit.Init(builder);
 
 // =========================
@@ -35,9 +35,23 @@ builder.Services.AddSingleton<DbInitializer>();
 var app = builder.Build();
 
 // =========================
-// INISIALISASI DATABASE
+// MIDDLEWARE
 // =========================
-// Equivalent to repository.Init() in Go main.go
+app.UseRouting();
+
+// Metrics (/metrics)
+ObservabilityInit.InitMetrics(app);
+
+// MVC routing
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// =========================
+// INISIALISASI DATABASE (AFTER PIPELINE READY)
+// =========================
+// Dipindah SETELAH middleware & routing
+// supaya tracing sudah stabil
 using (var scope = app.Services.CreateScope())
 {
     var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
@@ -45,27 +59,14 @@ using (var scope = app.Services.CreateScope())
 }
 
 // =========================
-// MIDDLEWARE
-// =========================
-app.UseRouting();
-
-// Initialize metrics middleware (Prometheus / OTel)
-ObservabilityInit.InitMetrics(app);
-
-// =========================
-// MVC ROUTING (WAJIB UNTUK VIEW)
-// =========================
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// =========================
-// GRACEFUL SHUTDOWN
+// GRACEFUL SHUTDOWN (TRACE FLUSH FRIENDLY)
 // =========================
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 lifetime.ApplicationStopping.Register(() =>
 {
+    // Kasih waktu exporter flush span
     Console.WriteLine("Application shutting down gracefully...");
+    Thread.Sleep(2000);
 });
 
 // =========================
