@@ -9,21 +9,25 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>EcommerceApp</RootNamespace>
 
-    <!-- 🔥 INI FIX DUPLICATE CONTENT -->
+    <!-- FIX DUPLICATE CONTENT (WAJIB UNTUK DOCKER) -->
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
 
   <!-- ========================= -->
-  <!-- RAZOR VIEWS (EXPLICIT) -->
+  <!-- RAZOR VIEWS (MVC) -->
   <!-- ========================= -->
   <ItemGroup>
-    <Content Include="Views/**">
+    <Content Include="Views/**/*.cshtml">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+
+    <Content Include="wwwroot/**">
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
   <!-- ========================= -->
-  <!-- DATABASE -->
+  <!-- DATABASE (POSTGRESQL) -->
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="8.0.1" />
@@ -31,7 +35,7 @@
   </ItemGroup>
 
   <!-- ========================= -->
-  <!-- OPENTELEMETRY -->
+  <!-- OPENTELEMETRY (TRACING) -->
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="OpenTelemetry" Version="1.8.1" />
@@ -42,7 +46,7 @@
   </ItemGroup>
 
   <!-- ========================= -->
-  <!-- METRICS -->
+  <!-- METRICS (PROMETHEUS) -->
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="prometheus-net" Version="8.2.0" />
