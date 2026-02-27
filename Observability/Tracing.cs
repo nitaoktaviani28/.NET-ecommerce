@@ -13,11 +13,11 @@ public static class Tracing
         Console.WriteLine("🔍 Initializing tracing...");
 
         services.AddOpenTelemetry()
-            .WithTracing(tracer =>
+            .WithTracing(builder =>
             {
-                tracer
+                builder
                     // =========================
-                    // RESOURCE (SERVICE METADATA)
+                    // SERVICE METADATA
                     // =========================
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
@@ -28,33 +28,37 @@ public static class Tracing
                     )
 
                     // =========================
-                    // ROOT HTTP SERVER SPAN
+                    // ASP.NET CORE (ROOT SPAN)
                     // =========================
-                    .AddAspNetCoreInstrumentation(options =>
+                    .AddAspNetCoreInstrumentation(opt =>
                     {
-                        options.RecordException = true;
+                        opt.RecordException = true;
+                        opt.Filter = ctx => ctx.Request.Path != "/metrics";
                     })
 
                     // =========================
-                    // HTTP CLIENT SPAN
+                    // HTTP CLIENT
                     // =========================
                     .AddHttpClientInstrumentation()
 
                     // =========================
-                    // POSTGRES (Npgsql.OpenTelemetry)
-                    // WAJIB AddSource("Npgsql")
+                    // POSTGRES (AUTO INSTRUMENTATION)
                     // =========================
-                    .AddSource("Npgsql")
+                    .AddNpgsql()
 
                     // =========================
-                    // EXPORTER → ALLOY → TEMPO
+                    // OTLP EXPORTER → ALLOY → TEMPO
                     // =========================
-                    .AddOtlpExporter(options =>
+                    .AddOtlpExporter(opt =>
                     {
-                        options.Endpoint = new Uri(
-                            configuration["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"]
-                            ?? "http://alloy.monitoring.svc.cluster.local:4318/v1/traces"
+                        opt.Endpoint = new Uri(
+                            (configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+                             ?? "http://alloy.monitoring.svc.cluster.local:4318")
+                            + "/v1/traces"
                         );
+
+                        opt.Protocol =
+                            OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
                     });
             });
 
