@@ -13,6 +13,9 @@ public static class Tracing
             .WithTracing(tracer =>
             {
                 tracer
+                    // =========================
+                    // RESOURCE / SERVICE NAME
+                    // =========================
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
                             .AddService(
@@ -21,13 +24,24 @@ public static class Tracing
                             )
                     )
 
-                    // HTTP tracing
+                    // =========================
+                    // HTTP TRACING
+                    // =========================
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
                     })
 
-                    // OTLP → Alloy
+                    // =========================
+                    // EXPORTER (DEBUG)
+                    // =========================
+                    // 🔥 INI PENTING UNTUK DEBUG
+                    // Span akan muncul di stdout / logs container
+                    .AddConsoleExporter()
+
+                    // =========================
+                    // EXPORTER → ALLOY → TEMPO
+                    // =========================
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(
