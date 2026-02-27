@@ -10,38 +10,30 @@ public static class Tracing
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        Console.WriteLine("🔍 Initializing tracing...");
+
         services.AddOpenTelemetry()
-            .ConfigureResource(resource =>
+            .WithTracing(tracerProviderBuilder =>
             {
-                resource.AddService(
-                    serviceName: "dotnet-ecommerce",
-                    serviceVersion: "1.0.0"
-                );
-            })
-            .WithTracing(tracing =>
-            {
-                tracing
-                    // =========================
-                    // HTTP SERVER (ROOT SPAN)
-                    // =========================
-                    .AddAspNetCoreInstrumentation(options =>
+                tracerProviderBuilder
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService(
+                                serviceName: "dotnet-ecommerce",
+                                serviceVersion: "1.0.0"
+                            )
+                    )
+
+                    // ROOT HTTP SPAN
+                    .AddAspNetCoreInstrumentation(opt =>
                     {
-                        options.RecordException = true;
+                        opt.RecordException = true;
                     })
 
-                    // =========================
                     // HTTP CLIENT
-                    // =========================
                     .AddHttpClientInstrumentation()
 
-                    // =========================
-                    // POSTGRESQL (🔥 INI KUNCINYA 🔥)
-                    // =========================
-                    .AddSource("Npgsql")
-
-                    // =========================
                     // EXPORTER → ALLOY / TEMPO
-                    // =========================
                     .AddOtlpExporter(opt =>
                     {
                         opt.Endpoint = new Uri(
@@ -50,5 +42,7 @@ public static class Tracing
                         );
                     });
             });
+
+        Console.WriteLine("✅ Tracing initialized");
     }
 }
