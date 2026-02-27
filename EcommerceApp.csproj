@@ -31,11 +31,14 @@
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="8.0.1" />
-    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
+
+    <!-- 🔥 WAJIB: DB tracing OpenTelemetry -->
+    <!-- Ini yang dipakai oleh .AddNpgsql() -->
+    <PackageReference Include="OpenTelemetry.Instrumentation.Npgsql" Version="1.8.1" />
   </ItemGroup>
 
   <!-- ========================= -->
-  <!-- OPENTELEMETRY (TRACING) -->
+  <!-- OPENTELEMETRY (TRACING CORE) -->
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="OpenTelemetry" Version="1.8.1" />
@@ -46,7 +49,7 @@
   </ItemGroup>
 
   <!-- ========================= -->
-  <!-- METRICS (PROMETHEUS) -->
+  <!-- METRICS (PROMETHEUS NATIVE) -->
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="prometheus-net" Version="8.2.0" />
