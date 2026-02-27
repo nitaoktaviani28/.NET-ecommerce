@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <!-- ========================= -->
-  <!-- PROJECT SETTINGS -->
-  <!-- ========================= -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -10,48 +7,29 @@
     <RootNamespace>EcommerceApp</RootNamespace>
   </PropertyGroup>
 
-  <!-- ========================= -->
-  <!-- RAZOR VIEWS (WAJIB DI DOCKER) -->
-  <!-- ========================= -->
+  <!-- Razor Views -->
   <ItemGroup>
     <Content Include="Views/**">
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- ASP.NET CORE -->
-  <!-- ========================= -->
+  <!-- Database -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-  </ItemGroup>
-
-  <!-- ========================= -->
-  <!-- DATABASE -->
-  <!-- ========================= -->
-  <ItemGroup>
-    <!-- PostgreSQL Driver -->
     <PackageReference Include="Npgsql" Version="8.0.1" />
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- OPENTELEMETRY (TRACING) -->
-  <!-- ========================= -->
+  <!-- OpenTelemetry -->
   <ItemGroup>
     <PackageReference Include="OpenTelemetry" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
-
-    <!-- 🔥 INI KUNCI SUPAYA AddNpgsql() ADA -->
-    <PackageReference Include="OpenTelemetry.Instrumentation.Npgsql" Version="1.0.0-rc9.14" />
-
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- METRICS -->
-  <!-- ========================= -->
+  <!-- Metrics -->
   <ItemGroup>
     <PackageReference Include="prometheus-net" Version="8.2.0" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.0" />
