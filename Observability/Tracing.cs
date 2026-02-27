@@ -33,14 +33,12 @@ public static class Tracing
                     })
 
                     // =========================
-                    // EXPORTER (DEBUG)
+                    // CONSOLE EXPORTER (DEBUG)
                     // =========================
-                    // 🔥 INI PENTING UNTUK DEBUG
-                    // Span akan muncul di stdout / logs container
                     .AddConsoleExporter()
 
                     // =========================
-                    // EXPORTER → ALLOY → TEMPO
+                    // OTLP EXPORTER → ALLOY
                     // =========================
                     .AddOtlpExporter(options =>
                     {
