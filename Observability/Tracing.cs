@@ -25,6 +25,12 @@ public static class Tracing
                     )
 
                     // =========================
+                    // SAMPLER (DEBUG: ALWAYS ON)
+                    // =========================
+                    // Pastikan TIDAK ADA span yang ter-drop
+                    .SetSampler(new AlwaysOnSampler())
+
+                    // =========================
                     // HTTP TRACING
                     // =========================
                     .AddAspNetCoreInstrumentation(options =>
@@ -35,10 +41,11 @@ public static class Tracing
                     // =========================
                     // CONSOLE EXPORTER (DEBUG)
                     // =========================
+                    // Span akan muncul di stdout / logs container
                     .AddConsoleExporter()
 
                     // =========================
-                    // OTLP EXPORTER → ALLOY
+                    // OTLP EXPORTER → ALLOY → TEMPO
                     // =========================
                     .AddOtlpExporter(options =>
                     {
