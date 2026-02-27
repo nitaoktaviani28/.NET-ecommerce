@@ -13,32 +13,47 @@ public static class Tracing
         Console.WriteLine("🔍 Initializing tracing...");
 
         services.AddOpenTelemetry()
-            .WithTracing(tracerProviderBuilder =>
+            .WithTracing(tracer =>
             {
-                tracerProviderBuilder
+                tracer
+                    // =========================
+                    // RESOURCE (SERVICE METADATA)
+                    // =========================
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
                             .AddService(
-                                serviceName: "dotnet-ecommerce",
+                                serviceName: configuration["OTEL_SERVICE_NAME"] ?? "dotnet-ecommerce",
                                 serviceVersion: "1.0.0"
                             )
                     )
 
-                    // ROOT HTTP SPAN
-                    .AddAspNetCoreInstrumentation(opt =>
+                    // =========================
+                    // ROOT HTTP SERVER SPAN
+                    // =========================
+                    .AddAspNetCoreInstrumentation(options =>
                     {
-                        opt.RecordException = true;
+                        options.RecordException = true;
                     })
 
-                    // HTTP CLIENT
+                    // =========================
+                    // HTTP CLIENT SPAN
+                    // =========================
                     .AddHttpClientInstrumentation()
 
-                    // EXPORTER → ALLOY / TEMPO
-                    .AddOtlpExporter(opt =>
+                    // =========================
+                    // POSTGRES (Npgsql.OpenTelemetry)
+                    // WAJIB AddSource("Npgsql")
+                    // =========================
+                    .AddSource("Npgsql")
+
+                    // =========================
+                    // EXPORTER → ALLOY → TEMPO
+                    // =========================
+                    .AddOtlpExporter(options =>
                     {
-                        opt.Endpoint = new Uri(
-                            configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
-                            ?? "http://alloy.monitoring.svc.cluster.local:4318"
+                        options.Endpoint = new Uri(
+                            configuration["OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"]
+                            ?? "http://alloy.monitoring.svc.cluster.local:4318/v1/traces"
                         );
                     });
             });
