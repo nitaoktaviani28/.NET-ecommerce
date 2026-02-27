@@ -1,14 +1,17 @@
 /**
  * Program.cs
- * 
+ *
  * Equivalent to: main.go
- * 
+ *
  * Entry point aplikasi ASP.NET Core e-commerce.
  * Observability diinisialisasi SEKALI di sini.
  */
 
 using EcommerceApp.Observability;
 using EcommerceApp.Repository;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,13 +49,15 @@ using (var scope = app.Services.CreateScope())
 // =========================
 app.UseRouting();
 
-// Initialize metrics middleware
+// Initialize metrics middleware (Prometheus / OTel)
 ObservabilityInit.InitMetrics(app);
 
 // =========================
-// MAP CONTROLLERS
+// MVC ROUTING (WAJIB UNTUK VIEW)
 // =========================
-app.MapControllers();
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // =========================
 // GRACEFUL SHUTDOWN
