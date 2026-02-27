@@ -30,14 +30,14 @@ public static class Tracing
                     })
 
                     // =========================
-                    // HTTP CLIENT (OPTIONAL)
+                    // HTTP CLIENT
                     // =========================
                     .AddHttpClientInstrumentation()
 
                     // =========================
-                    // POSTGRESQL (INI KUNCI UTAMA)
+                    // POSTGRESQL (🔥 INI KUNCINYA 🔥)
                     // =========================
-                    .AddNpgsql()
+                    .AddSource("Npgsql")
 
                     // =========================
                     // EXPORTER → ALLOY / TEMPO
