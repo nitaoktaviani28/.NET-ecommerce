@@ -31,10 +31,7 @@
   <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="8.0.1" />
-
-    <!-- 🔥 WAJIB: DB tracing OpenTelemetry -->
-    <!-- Ini yang dipakai oleh .AddNpgsql() -->
-    <PackageReference Include="OpenTelemetry.Instrumentation.Npgsql" Version="1.8.1" />
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
   </ItemGroup>
 
   <!-- ========================= -->
