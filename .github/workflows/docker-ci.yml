@@ -19,29 +19,34 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2️⃣ (OPSIONAL TAPI AMAN) Setup .NET SDK
-      # Tujuannya: validasi project & dependency sebelum Docker build
+      # 2️⃣ Setup .NET SDK (validasi & tooling)
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      # 3️⃣ Setup QEMU (WAJIB untuk multi-arch)
+      # 3️⃣ Clean build artifacts (🔥 FIX DUPLICATE CLASS)
+      - name: Clean .NET build artifacts
+        run: |
+          dotnet clean
+          rm -rf bin obj
+
+      # 4️⃣ Setup QEMU (WAJIB untuk multi-arch)
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # 4️⃣ Setup Docker Buildx
+      # 5️⃣ Setup Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 5️⃣ Login ke Docker Hub
+      # 6️⃣ Login ke Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6️⃣ Generate tag & metadata image
+      # 7️⃣ Generate metadata & tags image
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -52,7 +57,7 @@ jobs:
             type=ref,event=tag
             type=raw,value=latest
 
-      # 7️⃣ Build & Push Docker image (multi-arch)
+      # 8️⃣ Build & Push Docker image (Multi-Arch)
       - name: Build & Push multi-arch image
         uses: docker/build-push-action@v6
         with:
