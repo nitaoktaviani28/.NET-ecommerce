@@ -1,15 +1,7 @@
-/**
- * Repository/OrderRepository.cs
- * 
- * Equivalent to: OrderRepository in Go
- * 
- * Order data access.
- * TIDAK ADA kode tracing di sini - otomatis oleh OpenTelemetry.
- */
-
 using EcommerceApp.Models;
 using EcommerceApp.Observability;
 using Npgsql;
+using System.Diagnostics;
 
 namespace EcommerceApp.Repository;
 
@@ -19,17 +11,18 @@ public class OrderRepository
 
     public OrderRepository(IConfiguration configuration)
     {
-        _connectionString = Environment.GetEnvironmentVariable("DATABASE_DSN") 
+        _connectionString = Environment.GetEnvironmentVariable("DATABASE_DSN")
             ?? "Host=postgres.app.svc.cluster.local;Database=shop;Username=postgres;Password=postgres";
     }
 
-    /// <summary>
-    /// Create new order.
-    /// Equivalent to CreateOrder() in Go.
-    /// Query akan di-trace otomatis oleh OpenTelemetry Npgsql instrumentation.
-    /// </summary>
     public async Task<int> CreateAsync(int productId, int quantity, decimal total)
     {
+        // 🔥 INI YANG NYAMBUNGIN TRACE
+        using var activity =
+            Tracing.ActivitySource.StartActivity(
+                "OrderRepository.Create",
+                ActivityKind.Internal);
+
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
@@ -42,19 +35,16 @@ public class OrderRepository
 
         var orderId = (int)(await cmd.ExecuteScalarAsync() ?? 0);
 
-        // Increment custom metric
-        Metrics.OrdersCreatedTotal.Inc();
-
         return orderId;
     }
 
-    /// <summary>
-    /// Get order by ID.
-    /// Equivalent to GetOrder() in Go.
-    /// Query akan di-trace otomatis oleh OpenTelemetry Npgsql instrumentation.
-    /// </summary>
     public async Task<Order?> GetByIdAsync(int id)
     {
+        using var activity =
+            Tracing.ActivitySource.StartActivity(
+                "OrderRepository.GetById",
+                ActivityKind.Internal);
+
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
