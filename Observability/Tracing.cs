@@ -1,52 +1,48 @@
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Exporter;
- 
+
 namespace EcommerceApp.Observability;
- 
+
 public static class Tracing
 {
     public static void InitTracing(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var serviceName =
-            Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME")
-            ?? "dotnet-ecommerce";
- 
+        // 🔥 Service name (harus konsisten di Grafana Tempo)
+        var serviceName = "dotnet-ecommerce";
+
+        // 🔥 Direct to Tempo Distributor (gRPC)
         var otlpEndpoint =
-            Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")
-            ?? "http://alloy.monitoring.svc.cluster.local:4318";
- 
+            "http://tempo-distributor.monitoring.svc.cluster.local:4317";
+
         services.AddOpenTelemetry()
             .ConfigureResource(resource =>
                 resource.AddService(serviceName))
             .WithTracing(tracing =>
             {
                 tracing
-                    // 🔥 WAJIB: Jangan drop span
+                    // Jangan sampling biar semua trace masuk
                     .SetSampler(new AlwaysOnSampler())
- 
-                    // 🔥 WAJIB: Auto trace HTTP request
+
+                    // Auto instrumentation ASP.NET Core
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
-                        options.EnrichWithHttpRequest = (activity, request) =>
-                        {
-                            activity.SetTag("http.request_content_length", request.ContentLength);
-                        };
                     })
- 
-                    // 🔥 DEBUG: pastikan span benar-benar dibuat
+
+                    // Auto trace outgoing HTTP
+                    .AddHttpClientInstrumentation()
+
+                    // DEBUG sementara (boleh dihapus nanti)
                     .AddConsoleExporter()
- 
-                    // 🔥 Kirim ke Alloy → Tempo
+
+                    // 🔥 Kirim ke Tempo
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);
-                        options.Protocol = OtlpExportProtocol.HttpProtobuf;
- 
-                        // Timeout biar ga silent fail
+                        options.Protocol = OtlpExportProtocol.Grpc;
                         options.TimeoutMilliseconds = 10000;
                     });
             });
