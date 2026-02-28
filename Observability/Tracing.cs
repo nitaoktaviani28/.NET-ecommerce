@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Exporter;
@@ -6,14 +7,16 @@ namespace EcommerceApp.Observability;
 
 public static class Tracing
 {
+    // 🔥 ActivitySource GLOBAL (dipakai semua layer)
+    public static readonly ActivitySource ActivitySource =
+        new("dotnet-ecommerce");
+
     public static void InitTracing(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 🔥 Service name (harus konsisten di Grafana Tempo)
         var serviceName = "dotnet-ecommerce";
 
-        // 🔥 Direct to Tempo Distributor (gRPC)
         var otlpEndpoint =
             "http://tempo-distributor.monitoring.svc.cluster.local:4317";
 
@@ -23,28 +26,31 @@ public static class Tracing
             .WithTracing(tracing =>
             {
                 tracing
-                    // Jangan sampling biar semua trace masuk
-                    .SetSampler(new AlwaysOnSampler())
+                    // 🔥 WAJIB: register ActivitySource
+                    .AddSource("dotnet-ecommerce")
 
-                    // Auto instrumentation ASP.NET Core
+                    // Root span: incoming HTTP request
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
                     })
 
-                    // Auto trace outgoing HTTP
+                    // Outgoing HTTP (kalau ada)
                     .AddHttpClientInstrumentation()
 
-                    // DEBUG sementara (boleh dihapus nanti)
+                    // DEBUG (sementara)
                     .AddConsoleExporter()
 
-                    // 🔥 Kirim ke Tempo
+                    // Export ke Tempo
                     .AddOtlpExporter(options =>
                     {
                         options.Endpoint = new Uri(otlpEndpoint);
                         options.Protocol = OtlpExportProtocol.Grpc;
                         options.TimeoutMilliseconds = 10000;
-                    });
+                    })
+
+                    // Jangan sampling dulu biar kelihatan semua
+                    .SetSampler(new AlwaysOnSampler());
             });
     }
 }
