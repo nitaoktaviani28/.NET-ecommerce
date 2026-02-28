@@ -1,7 +1,7 @@
+using System.Diagnostics;
 using EcommerceApp.Models;
 using EcommerceApp.Observability;
 using Npgsql;
-using System.Diagnostics;
 
 namespace EcommerceApp.Repository;
 
@@ -18,11 +18,11 @@ public class OrderRepository
 
     public async Task<int> CreateAsync(int productId, int quantity, decimal total)
     {
-        // 🔥 create_order (Go equivalent)
+        // 🔥 PARENT SPAN HARUS Client
         using var activity =
             Tracing.ActivitySource.StartActivity(
                 "create_order",
-                ActivityKind.Internal);
+                ActivityKind.Client);
 
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -35,16 +35,15 @@ public class OrderRepository
         cmd.Parameters.AddWithValue(quantity);
         cmd.Parameters.AddWithValue(total);
 
-        return (int)(await cmd.ExecuteScalarAsync() ?? 0);
+        return (int)(await cmd.ExecuteScalarAsync()!);
     }
 
     public async Task<Order?> GetByIdAsync(int id)
     {
-        // 🔥 get_order (Go equivalent)
         using var activity =
             Tracing.ActivitySource.StartActivity(
                 "get_order",
-                ActivityKind.Internal);
+                ActivityKind.Client);
 
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
