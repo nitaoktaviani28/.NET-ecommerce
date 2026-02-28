@@ -1,51 +1,35 @@
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Exporter;
+/**
+ * Observability/ObservabilityInit.cs
+ *
+ * Single entry point untuk seluruh observability.
+ * Dipanggil SEKALI dari Program.cs.
+ */
 
 namespace EcommerceApp.Observability;
 
-public static class Tracing
+public static class ObservabilityInit
 {
-    public static void InitTracing(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    /// <summary>
+    /// Init observability services (Tracing, Profiling, Metrics)
+    /// </summary>
+    public static void Init(WebApplicationBuilder builder)
     {
-        var serviceName =
-            Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME")
-            ?? "dotnet-ecommerce";
+        Console.WriteLine("🔍 Initializing observability...");
 
-        // 🔥 DIRECT TO TEMPO (BUKAN ALLOY)
-        var otlpEndpoint =
-            Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")
-            ?? "http://tempo-distributor.monitoring.svc.cluster.local:4317";
+        // 🔥 Tracing (OpenTelemetry → Tempo)
+        builder.Services.InitTracing(builder.Configuration);
 
-        services.AddOpenTelemetry()
-            .ConfigureResource(resource =>
-                resource.AddService(serviceName))
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .SetSampler(new AlwaysOnSampler())
+        // 🔥 Profiling (Pyroscope)
+        Profiling.InitProfiling();
 
-                    .AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.RecordException = true;
-                        options.EnrichWithHttpRequest = (activity, request) =>
-                        {
-                            activity.SetTag("http.request_content_length", request.ContentLength);
-                        };
-                    })
+        Console.WriteLine("✅ Observability initialized");
+    }
 
-                    // DEBUG (sementara, WAJIB ADA)
-                    .AddConsoleExporter()
-
-                    // 🔥 KIRIM LANGSUNG KE TEMPO
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri(otlpEndpoint);
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                        options.TimeoutMilliseconds = 10000;
-                    });
-            });
+    /// <summary>
+    /// Init metrics middleware (after app build)
+    /// </summary>
+    public static void InitMetrics(WebApplication app)
+    {
+        app.InitMetrics();
     }
 }
