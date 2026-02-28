@@ -1,41 +1,51 @@
-/**
- * Observability/ObservabilityInit.cs
- * 
- * Equivalent to: observability/init.go
- * 
- * Single entry point untuk inisialisasi observability.
- * Fungsi Init() dipanggil sekali di Program.cs.
- */
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Exporter;
 
 namespace EcommerceApp.Observability;
 
-public static class ObservabilityInit
+public static class Tracing
 {
-    /// <summary>
-    /// Initialize all observability components.
-    /// Equivalent to Init() in Go.
-    /// 
-    /// This is the ONLY function that Program.cs calls.
-    /// </summary>
-    public static void Init(WebApplicationBuilder builder)
+    public static void InitTracing(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        Console.WriteLine("🔍 Initializing observability...");
+        var serviceName =
+            Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME")
+            ?? "dotnet-ecommerce";
 
-        // Initialize tracing (OpenTelemetry → Tempo via Alloy)
-        builder.Services.InitTracing(builder.Configuration);
+        // 🔥 DIRECT TO TEMPO (BUKAN ALLOY)
+        var otlpEndpoint =
+            Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")
+            ?? "http://tempo-distributor.monitoring.svc.cluster.local:4317";
 
-        // Initialize profiling (Pyroscope)
-        Profiling.InitProfiling();
+        services.AddOpenTelemetry()
+            .ConfigureResource(resource =>
+                resource.AddService(serviceName))
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetSampler(new AlwaysOnSampler())
 
-        Console.WriteLine("✅ Observability initialized");
-    }
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequest = (activity, request) =>
+                        {
+                            activity.SetTag("http.request_content_length", request.ContentLength);
+                        };
+                    })
 
-    /// <summary>
-    /// Initialize metrics middleware.
-    /// Called after app is built.
-    /// </summary>
-    public static void InitMetrics(WebApplication app)
-    {
-        app.InitMetrics();
+                    // DEBUG (sementara, WAJIB ADA)
+                    .AddConsoleExporter()
+
+                    // 🔥 KIRIM LANGSUNG KE TEMPO
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri(otlpEndpoint);
+                        options.Protocol = OtlpExportProtocol.Grpc;
+                        options.TimeoutMilliseconds = 10000;
+                    });
+            });
     }
 }
