@@ -13,6 +13,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+// =========================
+// 🔥 WAJIB: ENABLE NPGSQL OPENTELEMETRY
+// (kalau ini tidak ada → db.Query TIDAK AKAN MUNCUL)
+// =========================
+AppContext.SetSwitch(
+    "Npgsql.EnableActivitySource",
+    true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // =========================
@@ -54,17 +62,19 @@ app.MapControllerRoute(
 // supaya tracing sudah stabil
 using (var scope = app.Services.CreateScope())
 {
-    var dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    var dbInitializer =
+        scope.ServiceProvider.GetRequiredService<DbInitializer>();
     await dbInitializer.InitializeAsync();
 }
 
 // =========================
 // GRACEFUL SHUTDOWN (TRACE FLUSH FRIENDLY)
 // =========================
-var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+var lifetime =
+    app.Services.GetRequiredService<IHostApplicationLifetime>();
+
 lifetime.ApplicationStopping.Register(() =>
 {
-    // Kasih waktu exporter flush span
     Console.WriteLine("Application shutting down gracefully...");
     Thread.Sleep(2000);
 });
