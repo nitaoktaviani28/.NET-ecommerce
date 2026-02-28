@@ -1,14 +1,7 @@
-/**
- * Repository/ProductRepository.cs
- * 
- * Equivalent to: ProductRepository in Go
- * 
- * Product data access.
- * TIDAK ADA kode tracing di sini - otomatis oleh OpenTelemetry.
- */
-
 using EcommerceApp.Models;
+using EcommerceApp.Observability;
 using Npgsql;
+using System.Diagnostics;
 
 namespace EcommerceApp.Repository;
 
@@ -18,17 +11,18 @@ public class ProductRepository
 
     public ProductRepository(IConfiguration configuration)
     {
-        _connectionString = Environment.GetEnvironmentVariable("DATABASE_DSN") 
+        _connectionString =
+            Environment.GetEnvironmentVariable("DATABASE_DSN")
             ?? "Host=postgres.app.svc.cluster.local;Database=shop;Username=postgres;Password=postgres";
     }
 
-    /// <summary>
-    /// Get all products.
-    /// Equivalent to GetProducts() in Go.
-    /// Query akan di-trace otomatis oleh OpenTelemetry Npgsql instrumentation.
-    /// </summary>
     public async Task<List<Product>> GetAllAsync()
     {
+        using var activity =
+            Tracing.ActivitySource.StartActivity(
+                "list_products",
+                ActivityKind.Internal);
+
         var products = new List<Product>();
 
         await using var connection = new NpgsqlConnection(_connectionString);
@@ -52,32 +46,32 @@ public class ProductRepository
         return products;
     }
 
-    /// <summary>
-    /// Get product by ID.
-    /// Equivalent to GetProduct() in Go.
-    /// Query akan di-trace otomatis oleh OpenTelemetry Npgsql instrumentation.
-    /// </summary>
     public async Task<Product?> GetByIdAsync(int id)
     {
+        // 🔥 get_product (Go equivalent)
+        using var activity =
+            Tracing.ActivitySource.StartActivity(
+                "get_product",
+                ActivityKind.Internal);
+
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         await using var cmd = new NpgsqlCommand(
             "SELECT id, name, price FROM products WHERE id = $1",
             connection);
+
         cmd.Parameters.AddWithValue(id);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Product
-            {
-                Id = reader.GetInt32(0),
-                Name = reader.GetString(1),
-                Price = reader.GetDecimal(2)
-            };
-        }
+        if (!await reader.ReadAsync())
+            return null;
 
-        return null;
+        return new Product
+        {
+            Id = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            Price = reader.GetDecimal(2)
+        };
     }
 }
