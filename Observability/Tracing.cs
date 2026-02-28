@@ -7,7 +7,7 @@ namespace EcommerceApp.Observability;
 
 public static class Tracing
 {
-    // 🔥 ActivitySource GLOBAL (dipakai semua layer)
+    // 🔥 ActivitySource GLOBAL (dipakai semua layer app)
     public static readonly ActivitySource ActivitySource =
         new("dotnet-ecommerce");
 
@@ -26,19 +26,22 @@ public static class Tracing
             .WithTracing(tracing =>
             {
                 tracing
-                    // 🔥 WAJIB: register ActivitySource
+                    // 🔥 APP SPANS
                     .AddSource("dotnet-ecommerce")
 
-                    // Root span: incoming HTTP request
+                    // 🔥 DB SPANS (INI KUNCI AGAR db.Query MUNCUL)
+                    .AddSource("Npgsql")
+
+                    // Root HTTP span
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
                     })
 
-                    // Outgoing HTTP (kalau ada)
+                    // Outgoing HTTP
                     .AddHttpClientInstrumentation()
 
-                    // DEBUG (sementara)
+                    // DEBUG (boleh dihapus nanti)
                     .AddConsoleExporter()
 
                     // Export ke Tempo
@@ -49,7 +52,7 @@ public static class Tracing
                         options.TimeoutMilliseconds = 10000;
                     })
 
-                    // Jangan sampling dulu biar kelihatan semua
+                    // Jangan sampling dulu
                     .SetSampler(new AlwaysOnSampler());
             });
     }
