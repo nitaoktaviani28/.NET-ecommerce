@@ -18,11 +18,11 @@ public class OrderRepository
 
     public async Task<int> CreateAsync(int productId, int quantity, decimal total)
     {
-        // 🔥 PARENT SPAN HARUS Client
+        // ✅ INTERNAL span (business logic)
         using var activity =
             Tracing.ActivitySource.StartActivity(
                 "create_order",
-                ActivityKind.Client);
+                ActivityKind.Internal);
 
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -40,10 +40,11 @@ public class OrderRepository
 
     public async Task<Order?> GetByIdAsync(int id)
     {
+        // ✅ INTERNAL span
         using var activity =
             Tracing.ActivitySource.StartActivity(
                 "get_order",
-                ActivityKind.Client);
+                ActivityKind.Internal);
 
         await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
