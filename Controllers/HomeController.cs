@@ -1,12 +1,3 @@
-/**
- * Controllers/HomeController.cs
- * 
- * Equivalent to: handlers/product.go
- * 
- * Home controller untuk product listing.
- * Clean business logic tanpa observability code.
- */
-
 using EcommerceApp.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +8,9 @@ public class HomeController : Controller
     private readonly ProductRepository _productRepository;
     private readonly ILogger<HomeController> _logger;
 
-    public HomeController(ProductRepository productRepository, ILogger<HomeController> logger)
+    public HomeController(
+        ProductRepository productRepository,
+        ILogger<HomeController> logger)
     {
         _productRepository = productRepository;
         _logger = logger;
@@ -26,13 +19,8 @@ public class HomeController : Controller
     /// <summary>
     /// GET /
     /// Menampilkan list produk.
-    /// Equivalent to Home() in Go handlers/product.go.
-    /// 
-    /// Controller ini TIDAK mengandung kode tracing.
-    /// - HTTP request di-trace otomatis oleh OpenTelemetry
-    /// - SQL queries di-trace otomatis oleh Npgsql instrumentation
+    /// Routing DIATUR oleh MapControllerRoute (Program.cs)
     /// </summary>
-    [HttpGet("/")]
     public async Task<IActionResult> Index()
     {
         try
@@ -43,7 +31,7 @@ public class HomeController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Home controller error");
-            return StatusCode(500, "Internal Server Error");
+            return View("Error");
         }
     }
 }
