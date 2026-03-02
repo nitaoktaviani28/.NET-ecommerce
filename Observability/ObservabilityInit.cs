@@ -1,21 +1,20 @@
-/**
- * Observability/ObservabilityInit.cs
- *
- * Single entry point untuk seluruh observability.
- * Dipanggil SEKALI dari Program.cs.
- */
+using Serilog;
 
 namespace EcommerceApp.Observability;
 
 public static class ObservabilityInit
 {
     /// <summary>
-    /// Init observability services (Tracing & Metrics).
-    /// Profiling Pyroscope diaktifkan via ENV (bukan code).
+    /// Init observability services (Logging, Tracing & Metrics).
+    /// Dipanggil SEKALI dari Program.cs.
     /// </summary>
     public static void Init(WebApplicationBuilder builder)
     {
         Console.WriteLine("🔍 Initializing observability...");
+
+        // 🔥 Logging → Loki (direct, no agent)
+        Logging.Init();
+        builder.Host.UseSerilog();
 
         // 🔥 Tracing → Alloy → Tempo
         builder.Services.AddTracing();
