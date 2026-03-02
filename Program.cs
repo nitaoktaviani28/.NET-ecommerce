@@ -27,13 +27,13 @@ builder.Services.AddSingleton<DbInitializer>();
 var app = builder.Build();
 
 // =========================
-// ERROR HANDLING (WAJIB BIAR TIDAK BLANK)
+// ERROR HANDLING
 // =========================
 app.UseExceptionHandler("/Home/Error");
 app.UseStatusCodePagesWithReExecute("/Home/Error");
 
 // =========================
-// STATIC FILES (WAJIB UNTUK MVC)
+// STATIC FILES (MVC)
 // =========================
 app.UseStaticFiles();
 
@@ -43,22 +43,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // =========================
-// API CONTROLLERS
-// =========================
-app.MapControllers();
-
-// =========================
-// MVC CONTROLLERS
+// MVC ROUTES (SATU-SATUNYA ROUTE)
 // =========================
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// =========================
-// ROOT & HEALTH (DEBUG + OPS FRIENDLY)
-// =========================
-app.MapGet("/", () => Results.Ok("🚀 E-commerce app is running"));
-app.MapGet("/health", () => Results.Ok("OK"));
 
 // =========================
 // INIT DATABASE
