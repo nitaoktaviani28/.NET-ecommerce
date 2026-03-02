@@ -18,7 +18,7 @@ public static class Tracing
         var serviceName = "dotnet-ecommerce";
 
         var otlpEndpoint =
-            "http://tempo-distributor.monitoring.svc.cluster.local:4317";
+            "http://20.42.147.156:4317";
 
         services.AddOpenTelemetry()
             .ConfigureResource(resource =>
