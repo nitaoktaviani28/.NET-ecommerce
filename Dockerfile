@@ -31,6 +31,8 @@ COPY --from=pyroscope/pyroscope-dotnet:0.13.0-glibc \
 # =========================
 # ENV
 # =========================
+ENV DOTNET_EnableDiagnostics=1
+ENV DOTNET_EnableDiagnostics_Profiler=1
 ENV ASPNETCORE_URLS=http://+:8080
 
 EXPOSE 8080
