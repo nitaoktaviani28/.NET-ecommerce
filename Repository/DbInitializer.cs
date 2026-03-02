@@ -1,11 +1,3 @@
-/**
- * Repository/DbInitializer.cs
- * 
- * Equivalent to: database initialization in Go repository
- * 
- * Database setup dan seeding.
- */
-
 using Npgsql;
 
 namespace EcommerceApp.Repository;
@@ -16,72 +8,97 @@ public class DbInitializer
 
     public DbInitializer(IConfiguration configuration)
     {
-        _connectionString = Environment.GetEnvironmentVariable("DATABASE_DSN") 
-            ?? "Host=postgres.app.svc.cluster.local;Database=shop;Username=postgres;Password=postgres";
+        // PRIORITY:
+        // 1. DATABASE_DSN (Docker / K8s)
+        // 2. ConnectionStrings:Default
+        // 3. Local fallback (Docker Compose)
+        _connectionString =
+            Environment.GetEnvironmentVariable("DATABASE_DSN")
+            ?? configuration.GetConnectionString("Default")
+            ?? "Host=postgres;Port=5432;Database=ecommerce;Username=postgres;Password=postgres";
     }
 
-    /// <summary>
-    /// Initialize database tables dan seed data.
-    /// Equivalent to setupDatabase() in Go.
-    /// </summary>
     public async Task InitializeAsync()
     {
-        await using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        const int maxRetry = 10;
+        var delay = TimeSpan.FromSeconds(2);
 
-        // Create products table
+        for (var attempt = 1; attempt <= maxRetry; attempt++)
+        {
+            try
+            {
+                await using var connection = new NpgsqlConnection(_connectionString);
+                await connection.OpenAsync();
+
+                await CreateTables(connection);
+                await SeedData(connection);
+
+                Console.WriteLine("✅ Database initialized successfully");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"⚠️ DB connection failed (attempt {attempt}/{maxRetry}): {ex.Message}");
+
+                if (attempt == maxRetry)
+                    throw;
+
+                await Task.Delay(delay);
+            }
+        }
+    }
+
+    private static async Task CreateTables(NpgsqlConnection connection)
+    {
         await using (var cmd = new NpgsqlCommand(@"
             CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
-                name VARCHAR(255),
-                price DECIMAL(10,2)
+                name TEXT,
+                price INT
             )", connection))
         {
             await cmd.ExecuteNonQueryAsync();
         }
 
-        // Create orders table
         await using (var cmd = new NpgsqlCommand(@"
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
-                product_id INTEGER,
-                quantity INTEGER,
-                total DECIMAL(10,2),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                product_id INT
             )", connection))
         {
             await cmd.ExecuteNonQueryAsync();
         }
+    }
 
-        // Seed products if empty
-        await using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM products", connection))
+    private static async Task SeedData(NpgsqlConnection connection)
+    {
+        await using var countCmd =
+            new NpgsqlCommand("SELECT COUNT(*) FROM products", connection);
+
+        var count = (long)(await countCmd.ExecuteScalarAsync() ?? 0);
+
+        if (count > 0) return;
+
+        var products = new[]
         {
-            var count = (long)(await cmd.ExecuteScalarAsync() ?? 0L);
-            
-            if (count == 0)
-            {
-                var products = new[]
-                {
-                    ("Gaming Laptop", 15000000m),
-                    ("Wireless Mouse", 300000m),
-                    ("Mechanical Keyboard", 800000m),
-                    ("4K Monitor", 3500000m)
-                };
+            ("Keyboard", 300000),
+            ("Mouse", 150000),
+            ("Monitor", 2000000)
+        };
 
-                foreach (var (name, price) in products)
-                {
-                    await using var insertCmd = new NpgsqlCommand(
-                        "INSERT INTO products (name, price) VALUES ($1, $2)",
-                        connection);
-                    insertCmd.Parameters.AddWithValue(name);
-                    insertCmd.Parameters.AddWithValue(price);
-                    await insertCmd.ExecuteNonQueryAsync();
-                }
+        foreach (var (name, price) in products)
+        {
+            await using var insertCmd =
+                new NpgsqlCommand(
+                    "INSERT INTO products (name, price) VALUES ($1, $2)",
+                    connection);
 
-                Console.WriteLine("✅ Sample products inserted");
-            }
+            insertCmd.Parameters.AddWithValue(name);
+            insertCmd.Parameters.AddWithValue(price);
+            await insertCmd.ExecuteNonQueryAsync();
         }
 
-        Console.WriteLine("✅ Database initialized");
+        Console.WriteLine("✅ Seed data inserted");
     }
 }
