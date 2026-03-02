@@ -3,7 +3,8 @@
  *
  * Equivalent to: observability/env.go
  *
- * Environment variable helper + observability config.
+ * Centralized environment variable helper
+ * for ALL observability configuration.
  */
 
 namespace EcommerceApp.Observability;
@@ -28,21 +29,43 @@ public static class Env
     public static string ServiceVersion =>
         GetEnv("SERVICE_VERSION", "1.0.0");
 
+    public static string Environment =>
+        GetEnv("ENVIRONMENT", "vm");
+
     // ============================
-    // Alloy OTLP endpoints
+    // Tracing (OTLP → Alloy → Tempo)
     // ============================
 
     /// <summary>
-    /// OTLP gRPC endpoint (Tracing → Tempo)
+    /// OTLP gRPC endpoint for tracing.
     /// Example: http://20.xx.xx.xx:4317
     /// </summary>
     public static string AlloyOtlpGrpcEndpoint =>
         GetEnv("ALLOY_OTLP_GRPC_ENDPOINT", "http://20.98.125.199:4317");
 
     /// <summary>
-    /// OTLP HTTP base endpoint (Metrics & Logs)
+    /// OTLP HTTP endpoint (base).
+    /// Used only if needed (metrics / logs via OTLP).
     /// Example: http://20.xx.xx.xx:4318
     /// </summary>
     public static string AlloyOtlpHttpEndpoint =>
         GetEnv("ALLOY_OTLP_HTTP_ENDPOINT", "http://20.98.125.199:4318");
+
+    // ============================
+    // Logging (Direct → Loki)
+    // ============================
+
+    /// <summary>
+    /// Loki HTTP push endpoint.
+    /// MUST point directly to Loki Gateway,
+    /// NOT Alloy.
+    ///
+    /// Example:
+    /// http://20.xx.xx.xx/loki/api/v1/push
+    /// </summary>
+    public static string LokiEndpoint =>
+        GetEnv(
+            "LOKI_ENDPOINT",
+            "http://20.72.253.146/loki/api/v1/push"
+        );
 }
