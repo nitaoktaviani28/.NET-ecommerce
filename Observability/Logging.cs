@@ -15,17 +15,17 @@ public static class Logging
 
             .Enrich.FromLogContext()
             .Enrich.WithProperty("service", Env.ServiceName)
-            .Enrich.WithProperty("version", Env.ServiceVersion)
-            .Enrich.WithProperty("env", Env.RuntimeEnvironment)
+            .Enrich.WithProperty("env", Env.GetEnv("ENVIRONMENT", "vm"))
 
             .WriteTo.Console()
-            .WriteTo.GrafanaLoki(
-                uri: Env.LokiEndpoint,
-                labels: new[]
-                {
-                    new LokiLabel { Key = "service", Value = Env.ServiceName },
-                    new LokiLabel { Key = "env", Value = Env.RuntimeEnvironment }
-                })
+
+            // 🔥 FILE LOG (INI KUNCI)
+            .WriteTo.File(
+                path: "/var/log/ecommerce/app.log",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                shared: true
+            )
 
             .CreateLogger();
     }
