@@ -1,21 +1,16 @@
 /**
  * Program.cs
  *
- * Equivalent to: main.go
- *
- * Entry point aplikasi ASP.NET Core e-commerce.
- * Observability diinisialisasi SEKALI di sini.
+ * Entry point ASP.NET Core e-commerce app.
+ * Observability (LGTM via Alloy) diinisialisasi SEKALI di sini.
  */
 
 using EcommerceApp.Observability;
 using EcommerceApp.Repository;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 // =========================
 // 🔥 WAJIB: ENABLE NPGSQL OPENTELEMETRY
-// (kalau ini tidak ada → db.Query TIDAK AKAN MUNCUL)
 // =========================
 AppContext.SetSwitch(
     "Npgsql.EnableActivitySource",
@@ -24,10 +19,10 @@ AppContext.SetSwitch(
 var builder = WebApplication.CreateBuilder(args);
 
 // =========================
-// INISIALISASI OBSERVABILITY (SINGLE ENTRY POINT)
+// OBSERVABILITY (SINGLE ENTRY POINT)
 // =========================
-// OpenTelemetry + Tracing di-register DI SINI
-ObservabilityInit.Init(builder);
+builder.Services.AddTracing();   // → Tempo via Alloy (OTLP gRPC)
+builder.Services.AddMetrics();   // → Mimir via Alloy (OTLP HTTP)
 
 // =========================
 // SERVICES
@@ -47,19 +42,15 @@ var app = builder.Build();
 // =========================
 app.UseRouting();
 
-// Metrics (/metrics)
-ObservabilityInit.InitMetrics(app);
-
 // MVC routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // =========================
-// INISIALISASI DATABASE (AFTER PIPELINE READY)
+// INISIALISASI DATABASE
 // =========================
-// Dipindah SETELAH middleware & routing
-// supaya tracing sudah stabil
+// Dijalankan SETELAH pipeline siap
 using (var scope = app.Services.CreateScope())
 {
     var dbInitializer =
