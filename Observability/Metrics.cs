@@ -1,50 +1,41 @@
 /**
  * Observability/Metrics.cs
- * 
- * Equivalent to: observability metrics in Go
- * 
- * Prometheus metrics setup.
- * Exposes /metrics endpoint.
+ *
+ * OpenTelemetry metrics setup.
+ * Push metrics to Alloy (OTLP HTTP) → Mimir.
  */
 
-using Prometheus;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 namespace EcommerceApp.Observability;
 
 public static class Metrics
 {
-    // Prometheus metrics (1:1 dengan Go app)
-    public static readonly Counter HttpRequestsTotal = Prometheus.Metrics
-        .CreateCounter(
-            "http_requests_total",
-            "Total HTTP requests",
-            new CounterConfiguration
-            {
-                LabelNames = new[] { "method", "endpoint", "status" }
-            });
-
-    public static readonly Histogram HttpRequestDuration = Prometheus.Metrics
-        .CreateHistogram(
-            "http_request_duration_seconds",
-            "HTTP request duration",
-            new HistogramConfiguration
-            {
-                LabelNames = new[] { "method", "endpoint" }
-            });
-
-    public static readonly Counter OrdersCreatedTotal = Prometheus.Metrics
-        .CreateCounter(
-            "orders_created_total",
-            "Total orders created");
-
-    /// <summary>
-    /// Initialize Prometheus metrics.
-    /// Equivalent to metrics setup in Go.
-    /// </summary>
-    public static void InitMetrics(this IApplicationBuilder app)
+    public static void AddMetrics(this IServiceCollection services)
     {
-        // Expose /metrics endpoint
-        app.UseMetricServer();
-        Console.WriteLine("✅ Metrics initialized, endpoint: /metrics");
+        services.AddOpenTelemetry()
+            .WithMetrics(builder =>
+            {
+                builder
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService(
+                                Env.ServiceName,
+                                serviceVersion: Env.ServiceVersion))
+                    // ASP.NET Core metrics (requests, latency)
+                    .AddAspNetCoreInstrumentation()
+                    // HttpClient metrics
+                    .AddHttpClientInstrumentation()
+                    // .NET runtime metrics (GC, CPU, threads)
+                    .AddRuntimeInstrumentation()
+                    // Export to Alloy → Mimir
+                    .AddOtlpExporter(o =>
+                    {
+                        o.Endpoint = new Uri($"{Env.AlloyOtlpHttpEndpoint}/v1/metrics");
+                    });
+            });
+
+        Console.WriteLine("✅ OpenTelemetry metrics enabled (push → Alloy → Mimir)");
     }
 }
