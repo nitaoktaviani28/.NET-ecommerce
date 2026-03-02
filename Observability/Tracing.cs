@@ -7,53 +7,48 @@ namespace EcommerceApp.Observability;
 
 public static class Tracing
 {
-    // 🔥 ActivitySource GLOBAL (dipakai semua layer app)
+    // 🔥 Global ActivitySource
     public static readonly ActivitySource ActivitySource =
-        new("dotnet-ecommerce");
+        new(Env.ServiceName);
 
-    public static void InitTracing(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddTracing(this IServiceCollection services)
     {
-        var serviceName = "dotnet-ecommerce";
-
-        var otlpEndpoint =
-            "http://20.42.147.156:4317";
-
         services.AddOpenTelemetry()
-            .ConfigureResource(resource =>
-                resource.AddService(serviceName))
             .WithTracing(tracing =>
             {
                 tracing
-                    // 🔥 APP SPANS
-                    .AddSource("dotnet-ecommerce")
+                    .SetResourceBuilder(
+                        ResourceBuilder.CreateDefault()
+                            .AddService(
+                                Env.ServiceName,
+                                serviceVersion: Env.ServiceVersion))
 
-                    // 🔥 DB SPANS (INI KUNCI AGAR db.Query MUNCUL)
+                    // App spans
+                    .AddSource(Env.ServiceName)
+
+                    // DB spans (Npgsql)
                     .AddSource("Npgsql")
 
-                    // Root HTTP span
-                    .AddAspNetCoreInstrumentation(options =>
+                    // Incoming HTTP
+                    .AddAspNetCoreInstrumentation(o =>
                     {
-                        options.RecordException = true;
+                        o.RecordException = true;
                     })
 
                     // Outgoing HTTP
                     .AddHttpClientInstrumentation()
 
-                    // DEBUG (boleh dihapus nanti)
-                    .AddConsoleExporter()
-
-                    // Export ke Tempo
-                    .AddOtlpExporter(options =>
+                    // 🔥 EXPORT KE ALLOY (BUKAN LANGSUNG TEMPO)
+                    .AddOtlpExporter(o =>
                     {
-                        options.Endpoint = new Uri(otlpEndpoint);
-                        options.Protocol = OtlpExportProtocol.Grpc;
-                        options.TimeoutMilliseconds = 10000;
+                        o.Endpoint = new Uri(Env.AlloyOtlpGrpcEndpoint);
+                        o.Protocol = OtlpExportProtocol.Grpc;
                     })
 
-                    // Jangan sampling dulu
                     .SetSampler(new AlwaysOnSampler());
             });
+
+        Console.WriteLine("✅ Tracing → Alloy → Tempo");
+        return services;
     }
 }
