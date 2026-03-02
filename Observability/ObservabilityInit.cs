@@ -12,16 +12,30 @@ public static class ObservabilityInit
     {
         Console.WriteLine("🔍 Initializing observability...");
 
-        // 🔥 Logging → Loki (direct, no agent)
+        // =========================
+        // LOGGING (Serilog → Loki)
+        // =========================
         Logging.Init();
         builder.Host.UseSerilog();
 
-        // 🔥 Tracing → Alloy → Tempo
+        // =========================
+        // TRACING (OTel → Alloy → Tempo)
+        // =========================
         builder.Services.AddTracing();
 
-        // 🔥 Metrics → Alloy → Mimir
+        // =========================
+        // METRICS (OTel → Alloy → Mimir)
+        // =========================
         builder.Services.AddOtelMetrics();
 
         Console.WriteLine("✅ Observability initialized");
+    }
+
+    /// <summary>
+    /// Flush logs on shutdown (IMPORTANT for Loki).
+    /// </summary>
+    public static void Shutdown()
+    {
+        Log.CloseAndFlush();
     }
 }
