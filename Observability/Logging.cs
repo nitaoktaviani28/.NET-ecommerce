@@ -10,7 +10,7 @@ public static class Logging
     /// Initialize application logging.
     /// Logs are sent to:
     /// - Console
-    /// - Loki (via HTTP push, without agent)
+    /// - Loki (direct HTTP push, no agent)
     /// </summary>
     public static void Init()
     {
@@ -26,8 +26,9 @@ public static class Logging
             // ENRICHMENT (GLOBAL LABELS)
             // =========================
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("service", Env.ServiceName)
-            .Enrich.WithProperty("version", Env.ServiceVersion)
+            .Enrich.WithProperty("service_name", Env.ServiceName)
+            .Enrich.WithProperty("service_version", Env.ServiceVersion)
+            .Enrich.WithProperty("env", Env.Environment)
 
             // =========================
             // SINKS
@@ -39,13 +40,13 @@ public static class Logging
                 {
                     new LokiLabel
                     {
-                        Key = "service",
+                        Key = "service_name",
                         Value = Env.ServiceName
                     },
                     new LokiLabel
                     {
                         Key = "env",
-                        Value = Env.GetEnv("ENVIRONMENT", "vm")
+                        Value = Env.Environment
                     }
                 })
 
