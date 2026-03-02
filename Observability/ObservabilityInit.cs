@@ -10,26 +10,19 @@ namespace EcommerceApp.Observability;
 public static class ObservabilityInit
 {
     /// <summary>
-    /// Init observability services (Tracing, Profiling, Metrics)
+    /// Init observability services (Tracing & Metrics).
+    /// Profiling Pyroscope diaktifkan via ENV (bukan code).
     /// </summary>
     public static void Init(WebApplicationBuilder builder)
     {
         Console.WriteLine("🔍 Initializing observability...");
 
-        // 🔥 Tracing (OpenTelemetry → Tempo)
-        builder.Services.InitTracing(builder.Configuration);
+        // 🔥 Tracing → Alloy → Tempo
+        builder.Services.AddTracing();
 
-        // 🔥 Profiling (Pyroscope)
-        Profiling.InitProfiling();
+        // 🔥 Metrics → Alloy → Mimir
+        builder.Services.AddOtelMetrics();
 
         Console.WriteLine("✅ Observability initialized");
-    }
-
-    /// <summary>
-    /// Init metrics middleware (after app build)
-    /// </summary>
-    public static void InitMetrics(WebApplication app)
-    {
-        app.InitMetrics();
     }
 }
