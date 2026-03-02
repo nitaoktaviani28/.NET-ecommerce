@@ -1,5 +1,6 @@
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Exporter;
 
 namespace EcommerceApp.Observability;
 
@@ -14,19 +15,23 @@ public static class Metrics
                     .SetResourceBuilder(
                         ResourceBuilder.CreateDefault()
                             .AddService(
-                                Env.ServiceName,
+                                serviceName: Env.ServiceName,
                                 serviceVersion: Env.ServiceVersion))
+
+                    // 🔥 Instrumentations
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
+
+                    // 🔥 Export via OTLP gRPC (RECOMMENDED)
                     .AddOtlpExporter(o =>
                     {
-                        o.Endpoint =
-                            new Uri($"{Env.AlloyOtlpHttpEndpoint}/v1/metrics");
+                        o.Endpoint = new Uri(Env.AlloyOtlpGrpcEndpoint);
+                        o.Protocol = OtlpExportProtocol.Grpc;
                     });
             });
 
-        Console.WriteLine("✅ Metrics → Alloy → Mimir");
+        Console.WriteLine("✅ Metrics → Alloy → Mimir (via OTLP gRPC)");
         return services;
     }
 }
