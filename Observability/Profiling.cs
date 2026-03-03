@@ -1,24 +1,16 @@
-/**
- * Observability/Profiling.cs
- *
- * Profiling DISABLED temporarily.
- *
- * Reason:
- * Pyroscope .NET SDK API is not stable and breaks build.
- * Tracing & metrics are prioritized.
- */
+using Pyroscope;
 
 namespace EcommerceApp.Observability;
 
 public static class Profiling
 {
-    /// <summary>
-    /// Initialize profiling (disabled).
-    /// This keeps build stable and CI green.
-    /// </summary>
     public static void InitProfiling()
     {
-        // Profiling intentionally disabled
-        // Will be enabled later using supported .NET approach
+        PyroscopeAgent.Start(new PyroscopeAgentOptions
+        {
+            ApplicationName = "ecommerce-app",
+            ServerAddress = "http://172.193.209.242:4040",
+            Environment = "vm"
+        });
     }
 }
