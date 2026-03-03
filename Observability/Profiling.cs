@@ -1,16 +1,14 @@
-using Grafana.Pyroscope;
-
 namespace EcommerceApp.Observability;
 
 public static class Profiling
 {
+    /// <summary>
+    /// Profiling menggunakan native CLR profiler.
+    /// Tidak perlu inisialisasi di kode.
+    /// </summary>
     public static void InitProfiling()
     {
-        PyroscopeProfiler.Start(new PyroscopeProfilerOptions
-        {
-            ApplicationName = "ecommerce-app",
-            ServerAddress = "http://172.193.209.242:4040",
-            Environment = "vm"
-        });
+        // Native profiler diaktifkan melalui Dockerfile (CORECLR env).
+        // Tidak perlu kode tambahan di sini.
     }
 }
