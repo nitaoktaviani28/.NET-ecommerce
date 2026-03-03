@@ -1,21 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <!-- ========================= -->
-  <!-- PROJECT SETTINGS -->
-  <!-- ========================= -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>EcommerceApp</RootNamespace>
-
-    <!-- FIX DUPLICATE CONTENT (WAJIB UNTUK DOCKER) -->
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
 
-  <!-- ========================= -->
-  <!-- RAZOR VIEWS (MVC) -->
-  <!-- ========================= -->
   <ItemGroup>
     <Content Include="Views/**/*.cshtml">
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -26,35 +18,28 @@
     </Content>
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- DATABASE (POSTGRESQL) -->
-  <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="8.0.1" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.1" />
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- OPENTELEMETRY (TRACING + METRICS) -->
-  <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="OpenTelemetry" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
-
-    <!-- Instrumentations -->
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.8.1" />
   </ItemGroup>
 
-  <!-- ========================= -->
-  <!-- LOGGING (SERILOG + LOKI) -->
-  <!-- ========================= -->
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
     <PackageReference Include="Serilog.Sinks.Grafana.Loki" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pyroscope" Version="0.11.0" />
   </ItemGroup>
 
 </Project>
