@@ -1,4 +1,4 @@
-using Pyroscope;
+using Grafana.Pyroscope;
 
 namespace EcommerceApp.Observability;
 
@@ -6,7 +6,7 @@ public static class Profiling
 {
     public static void InitProfiling()
     {
-        PyroscopeAgent.Start(new PyroscopeAgentOptions
+        PyroscopeProfiler.Start(new PyroscopeProfilerOptions
         {
             ApplicationName = "ecommerce-app",
             ServerAddress = "http://172.193.209.242:4040",
