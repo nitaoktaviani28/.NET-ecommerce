@@ -6,7 +6,7 @@ WORKDIR /src
 
 # Salin file project dan restore dependensi
 COPY EcommerceApp.csproj ./
-RUN dotnet restore EcommerceApp.csproj
+RUN dotnet restore EcommerceApp.csproj  
 
 # Salin seluruh file dan build
 COPY . ./
