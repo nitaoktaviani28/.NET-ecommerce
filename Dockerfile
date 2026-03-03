@@ -16,21 +16,24 @@ RUN dotnet publish EcommerceApp.csproj -c Release -o /app/publish
 FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-COPY --from=build /app/publish ./
+COPY --from=build /app/publish ./ 
 
-COPY --from=pyroscope/pyroscope-dotnet:0.13.0-glibc \
-  /Pyroscope.Profiler.Native.so /dotnet/Pyroscope.Profiler.Native.so
+# Copy Pyroscope profiler files
+COPY --from=pyroscope/pyroscope-dotnet:0.13.0-glibc /Pyroscope.Profiler.Native.so /dotnet/Pyroscope.Profiler.Native.so
+COPY --from=pyroscope/pyroscope-dotnet:0.13.0-glibc /Pyroscope.Linux.ApiWrapper.x64.so /dotnet/Pyroscope.Linux.ApiWrapper.x64.so
 
-COPY --from=pyroscope/pyroscope-dotnet:0.13.0-glibc \
-  /Pyroscope.Linux.ApiWrapper.x64.so /dotnet/Pyroscope.Linux.ApiWrapper.x64.so
-
+# =========================
+# ENV — OBSERVABILITY
+# =========================
 ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_EnableDiagnostics=1
+ENV DOTNET_EnableDiagnostics_Profiler=1
 
+# 🔥 Pyroscope profiling
 ENV CORECLR_ENABLE_PROFILING=1
 ENV CORECLR_PROFILER={BD1A650D-AC5D-4896-B64F-D6FA25D6B26A}
 ENV CORECLR_PROFILER_PATH=/dotnet/Pyroscope.Profiler.Native.so
 ENV LD_PRELOAD=/dotnet/Pyroscope.Linux.ApiWrapper.x64.so
-
 ENV PYROSCOPE_APPLICATION_NAME=ecommerce-app
 ENV PYROSCOPE_SERVER_ADDRESS=http://172.193.209.242:4040
 ENV PYROSCOPE_ENVIRONMENT=vm
