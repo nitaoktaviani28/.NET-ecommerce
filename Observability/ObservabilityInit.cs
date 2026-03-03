@@ -24,11 +24,6 @@ public static class ObservabilityInit
         // =========================
         builder.Services.AddOtelMetrics();
 
-        // =========================
-        // PROFILING (Pyroscope)
-        // =========================
-        Profiling.InitProfiling();
-
         Console.WriteLine("✅ Observability initialized");
     }
 
