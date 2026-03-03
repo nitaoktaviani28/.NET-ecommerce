@@ -4,10 +4,6 @@ namespace EcommerceApp.Observability;
 
 public static class ObservabilityInit
 {
-    /// <summary>
-    /// Init observability services (Logging, Tracing & Metrics).
-    /// Dipanggil SEKALI dari Program.cs.
-    /// </summary>
     public static void Init(WebApplicationBuilder builder)
     {
         Console.WriteLine("🔍 Initializing observability...");
@@ -28,12 +24,14 @@ public static class ObservabilityInit
         // =========================
         builder.Services.AddOtelMetrics();
 
+        // =========================
+        // PROFILING (Pyroscope)
+        // =========================
+        Profiling.InitProfiling();
+
         Console.WriteLine("✅ Observability initialized");
     }
 
-    /// <summary>
-    /// Flush logs on shutdown (IMPORTANT for Loki).
-    /// </summary>
     public static void Shutdown()
     {
         Log.CloseAndFlush();
