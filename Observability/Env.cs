@@ -25,10 +25,10 @@ public static class Env
     // ============================
 
     public static string AlloyOtlpGrpcEndpoint =>
-        GetEnv("ALLOY_OTLP_GRPC_ENDPOINT", "http://20.98.125.199:4317");
+        GetEnv("ALLOY_OTLP_GRPC_ENDPOINT", "http://20.115.192.181:4317");
 
     public static string AlloyOtlpHttpEndpoint =>
-        GetEnv("ALLOY_OTLP_HTTP_ENDPOINT", "http://20.98.125.199:4318");
+        GetEnv("ALLOY_OTLP_HTTP_ENDPOINT", "http://20.115.192.181:4318");
 
     // ============================
     // Logging (Direct → Loki)
@@ -37,6 +37,6 @@ public static class Env
     public static string LokiEndpoint =>
         GetEnv(
             "LOKI_ENDPOINT",
-            "http://20.72.253.146/loki/api/v1/push"
+            "http://4.149.158.209/loki/api/v1/push"
         );
 }
