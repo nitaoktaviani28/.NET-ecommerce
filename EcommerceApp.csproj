@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pyroscope" Version="0.11.0" />
+    <PackageReference Include="Grafana.Pyroscope" Version="1.2.0" />
   </ItemGroup>
 
 </Project>
