@@ -6,7 +6,7 @@ WORKDIR /src
 
 # Salin file project dan restore dependensi
 COPY EcommerceApp.csproj ./
-RUN dotnet restore EcommerceApp.csproj  
+RUN dotnet restore EcommerceApp.csproj
 
 # Salin seluruh file dan build
 COPY . ./
@@ -42,6 +42,7 @@ ENV PYROSCOPE_SERVER_ADDRESS=http://172.193.209.242:4040
 ENV PYROSCOPE_ENVIRONMENT=vm
 ENV PYROSCOPE_PROFILING_RATE=100
 
+# Port yang digunakan oleh aplikasi
 EXPOSE 8080
 
 # Menjalankan aplikasi .NET
