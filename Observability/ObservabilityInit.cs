@@ -1,40 +1,34 @@
 using Serilog;
 
-namespace EcommerceApp.Observability
+namespace EcommerceApp.Observability;
+
+public static class ObservabilityInit
 {
-    public static class ObservabilityInit
+    public static void Init(WebApplicationBuilder builder)
     {
-        public static void Init(WebApplicationBuilder builder)
-        {
-            Console.WriteLine("🔍 Initializing observability...");
+        Console.WriteLine("🔍 Initializing observability...");
 
-            // =========================
-            // LOGGING (Serilog → Loki)
-            // =========================
-            Logging.Init();
-            builder.Host.UseSerilog();
+        // =========================
+        // LOGGING (Serilog → Loki)
+        // =========================
+        Logging.Init();
+        builder.Host.UseSerilog();
 
-            // =========================
-            // TRACING (OTel → Alloy → Tempo)
-            // =========================
-            builder.Services.AddTracing();
+        // =========================
+        // TRACING (OTel → Alloy → Tempo)
+        // =========================
+        builder.Services.AddTracing();
 
-            // =========================
-            // METRICS (OTel → Alloy → Mimir)
-            // =========================
-            builder.Services.AddOtelMetrics();
+        // =========================
+        // METRICS (OTel → Alloy → Mimir)
+        // =========================
+        builder.Services.AddOtelMetrics();
 
-            // =========================
-            // PROFILING (Pyroscope)
-            // =========================
-            Profiling.Init(builder.Services);
+        Console.WriteLine("✅ Observability initialized");
+    }
 
-            Console.WriteLine("✅ Observability initialized");
-        }
-
-        public static void Shutdown()
-        {
-            Log.CloseAndFlush();
-        }
+    public static void Shutdown()
+    {
+        Log.CloseAndFlush();
     }
 }
