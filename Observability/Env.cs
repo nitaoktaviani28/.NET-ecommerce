@@ -37,6 +37,6 @@ public static class Env
     public static string LokiEndpoint =>
         GetEnv(
             "LOKI_ENDPOINT",
-            "http://4.149.158.209/loki/api/v1/push"
+            "http://48.192.13.193/loki/api/v1/push"
         );
 }
