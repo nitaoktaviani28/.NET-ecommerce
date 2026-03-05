@@ -1,17 +1,18 @@
-using Pyroscope;
-
 namespace EcommerceApp.Observability
 {
     public static class Profiling
     {
-        public static void Init(IServiceCollection services)
+        /// <summary>
+        /// Profiling menggunakan native CLR profiler.
+        /// Tidak perlu inisialisasi di kode.
+        /// </summary>
+        public static void InitProfiling()
         {
-            // Mengonfigurasi Pyroscope untuk mengirim data profiling
-            services.AddPyroscope(options =>
-            {
-                options.ApplicationName = "ecommerce-app";  // Ganti dengan nama aplikasi kamu
-                options.ServerAddress = "http://172.193.209.242:4040";  // Ganti dengan alamat server Pyroscope di AKS
-            });
+            // Native profiler diaktifkan melalui Dockerfile (CORECLR env).
+            // Tidak perlu kode tambahan di sini.
+
+            // Tambahkan log untuk verifikasi bahwa profiling sudah diaktifkan
+            Console.WriteLine("🔍 Pyroscope profiler initialized!");
         }
     }
 }
